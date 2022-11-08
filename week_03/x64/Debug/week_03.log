@@ -1,0 +1,4 @@
+﻿  Sequence alignment.cpp
+D:\aa_DTU\study-3-semester\02110-Algorithms and Data Structures\Exercise\week_03\Sequence alignment.cpp(12,21): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+D:\aa_DTU\study-3-semester\02110-Algorithms and Data Structures\Exercise\week_03\Sequence alignment.cpp(13,21): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+  week_03.vcxproj -> D:\aa_DTU\study-3-semester\02110-Algorithms and Data Structures\Exercise\week_03\x64\Debug\week_03.exe
