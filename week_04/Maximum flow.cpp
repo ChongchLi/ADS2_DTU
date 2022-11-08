@@ -1,123 +1,119 @@
-#include <bits/stdc++.h>
+#include <iostream>
+#include <vector>
+#include <queue>
 
-using namespace std;
+int Ford_Fulkerson(int source, int target, int n, std::vector<std::vector<int> >& graph);
+void addEdge(std::vector<std::vector<int> >& graph, int u, int v, int w);
+int main()
+{
+	// initialize
+	// input line 1: The number of nodes/vertices V in the network
+	int n_Ver;
+	std::cin >> n_Ver;
 
-void print_graph(__uint16_t** graph, int n) {
-    for (int i = 0; i < n; i++) {
-        for (int j = 0; j < n; j++)
-            cout << graph[i][j] << " ";
-        cout << endl;
-    }
+	// input line 2: The number of edges of E in the network.
+	int n_Edges;
+	std::cin >> n_Edges;
+
+	// input line3: (source, target, capacity)
+	std::vector<std::vector<int> > Flow(n_Edges, std::vector<int>(3, 0));
+	for (int i = 0; i < n_Edges; i++)
+	{
+		for (int j = 0; j < 3; j++)
+		{
+			std::cin >> Flow[i][j];
+		}
+	}
+
+	std::vector<std::vector<int> > graph(n_Ver, std::vector<int>(n_Ver, 0));
+
+	// Adding edges weight in the graph
+	for (int i = 0; i < n_Edges; i++)
+	{
+		addEdge(graph, Flow[i][0], Flow[i][1], Flow[i][2]);
+	}
+
+	// output
+	std::cout << Ford_Fulkerson(0, 1, n_Ver, graph) << std::endl;
+
+	return 0;
+
 }
 
-vector<int> get_path(__uint16_t** graph, int n, int start, int end) {
-    vector<int> path;
-    bool* visited = new bool[n];
-    int* parent = new int[n];
-    stack<int> stack;
-    int v;
-    bool found = false;
-
-    stack.push(start);
-    for (int i = 0; i < n; i++) visited[i] = false;
-    visited[start] = true;
-
-    while (!stack.empty()) {
-        v = stack.top(); stack.pop();
-        if (v == end) {
-            found = true;
-            break;
-        }
-
-        for (int i = 0; i < n; i++) {
-            if (graph[v][i] > 0 and !visited[i]) {
-                stack.push(i);
-                visited[i] = true;
-                parent[i] = v;
-            }
-        }
-    }
-
-    if (found) {
-        v = end;
-        path.push_back(v);
-        while (v != start) {
-            v = parent[v];
-            path.push_back(v);
-        }
-        reverse(path.begin(), path.end());
-    }
-
-    delete[] visited;
-    delete[] parent;
-    return path;
+void addEdge(std::vector<std::vector<int> >& graph, int u, int v, int w)
+{
+	graph[u][v] = w;
 }
 
-int get_bottleneck(__uint16_t** graph, vector<int> path) {
-    int in_node, out_node, capacity;
-    int bottleneck = graph[path[0]][path[1]];
+int bfs(int source, int target, int n, std::vector<int>& parent, std::vector<std::vector<int>>& graph) {
+	//Update the parent vector as each node value to be -1
+	fill(parent.begin(), parent.end(), -1);
+	//parent of source node to be -2
+	parent[source] = -2;
+	//Initializing queue for storing and min capacity so far
+	std::queue<std::pair<int, int>> q;
+	//Source node min capacity to be 1e9
+	q.push({ source,1e9 });
 
-    for (int i = 1; i < path.size() - 1; i++) {
-        in_node = path[i];
-        out_node = path[i + 1];
-        capacity = graph[in_node][out_node];
-        if (capacity < bottleneck) bottleneck = capacity;
-    }
-
-    return bottleneck;
+	//Looping while queue is not empty 
+	while (!q.empty()) {
+		//storing top node and min capacity so far
+		int u = q.front().first;
+		int cap = q.front().second;
+		//Removing top node from queue
+		q.pop();
+		//Looping all edges from u
+		for (int v = 0; v < n; v++) {
+			//finding v node has edge from u
+			if (u != v && graph[u][v] != 0 && parent[v] == -1) {
+				//storing parent v to be u
+				parent[v] = u;
+				//Updating the minimum capacity
+				int min_cap = std::min(cap, graph[u][v]);
+				//If v is the target node then return minimum capacity
+				if (v == target) {
+					return min_cap;
+				}
+				//if we didn't find target node
+				//Insert the v node and minimum capacity so far in queue
+				q.push({ v,min_cap });
+			}
+		}
+	}
+	//if we didn't find path between source to target return 0
+	return 0;
 }
 
-void augment(__uint16_t** graph, vector<int> path) {
-    int in_node, out_node;
-    int bottleneck = get_bottleneck(graph, path);
 
-    for (int i = 0; i < path.size() - 1; i++) {
-        in_node = path[i];
-        out_node = path[i + 1];
-        graph[in_node][out_node] -= bottleneck;
-        graph[out_node][in_node] += bottleneck;
-    }
-}
+int Ford_Fulkerson(int source, int target, int n, std::vector<std::vector<int> >& graph)
+{
+	// creater vector for finding the path from source to the target
+	std::vector<int> parent(n, -1);
+	int max_flow = 0;
+	int min_cap = 0;
 
-int max_flow(__uint16_t** res_graph, __uint16_t** graph, int n, int start, int end) {
-    vector<int> path;
-    int max_flow = 0;
+	while (min_cap = bfs(source, target, n, parent, graph))
+	{
+		// adding the min_cap from this path
+		max_flow += min_cap;
+		//sorting target node in v
+		int v_target = target;
 
-    while ((path = get_path(res_graph, n, start, end)).size() > 0)
-        augment(res_graph, path);
+		while (v_target != source)
+		{
+			// finding parent of v_target node
+			int u_source = parent[v_target];
 
-    for (int i = 0; i < n; i++)
-        if (graph[i][start] == 0) max_flow += res_graph[i][start];
+			// substracting minimum capacity from u_source to v_target
+			// and adding minimum capacity from v_target to u_source
+			graph[u_source][v_target] -= min_cap;
+			graph[v_target][u_source] += min_cap;
 
-    return max_flow;
-}
+			// update
+			v_target = u_source;
+		}
 
-int main() {
-    int n, m;
-    int in_node, out_node, capacity;
+	}
+	return max_flow;
 
-    cin >> n >> m;
-    __uint16_t** graph = new __uint16_t * [n];
-    __uint16_t** res_graph = new __uint16_t * [n];
-    for (int i = 0; i < n; i++) {
-        graph[i] = new __uint16_t[n];
-        res_graph[i] = new __uint16_t[n];
-    }
-
-    for (int i = 0; i < n; i++)
-        for (int j = 0; j < n; j++)
-            graph[i][j] = 0;
-
-    for (int i = 0; i < m; i++) {
-        cin >> in_node >> out_node >> capacity;
-        graph[in_node][out_node] = capacity;
-    }
-
-    for (int i = 0; i < n; i++)
-        for (int j = 0; j < n; j++)
-            res_graph[i][j] = graph[i][j];
-
-    cout << max_flow(res_graph, graph, n, 0, 1);
-
-    return 0;
 }
