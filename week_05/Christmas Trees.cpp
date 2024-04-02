@@ -7,6 +7,8 @@ using namespace std;
 #define MAX_TREES_COL 1
 #define MAX_TABLES_SQUARE 1
 
+// sad ssads
+
 int main() {
     int n, m;
 
